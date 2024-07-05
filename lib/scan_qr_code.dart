@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ScanQrCode extends StatefulWidget {
   const ScanQrCode({super.key});
@@ -10,29 +11,42 @@ class ScanQrCode extends StatefulWidget {
 }
 
 class _ScanQrCodeState extends State<ScanQrCode> {
-  String qrresult = 'Scanned Data will appear here ';
+  String qrResult = 'Scanned Data will appear here ';
 
-  //method that should scan any qr
+  // Method that scans any QR code
   Future<void> scanQR() async {
     try {
       final qrCode = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.QR);
       if (!mounted) return;
       setState(() {
-        qrresult = qrCode != '-1' ? qrCode : 'Scan cancelled';
+        qrResult = qrCode != '-1' ? qrCode : 'Scan cancelled';
       });
     } on PlatformException {
       setState(() {
-        qrresult = 'Failed to read QR code';
+        qrResult = 'Failed to read QR code';
       });
     }
+  }
+
+  // Method to copy the result to the clipboard
+  void copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: qrResult));
+    Fluttertoast.showToast(
+        msg: "Copied to Clipboard",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Qr Code Scanner'),
+        title: const Text('QR Code Scanner'),
       ),
       body: Center(
         child: Column(
@@ -40,7 +54,7 @@ class _ScanQrCodeState extends State<ScanQrCode> {
           children: [
             const SizedBox(height: 30),
             Text(
-              '$qrresult',
+              qrResult,
               style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 50),
@@ -56,7 +70,21 @@ class _ScanQrCodeState extends State<ScanQrCode> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            )
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: copyToClipboard,
+              child: const Text("Copy Result"),
+              style: ElevatedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                backgroundColor: const Color.fromARGB(255, 150, 178, 226),
+                textStyle: const TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
           ],
         ),
       ),
